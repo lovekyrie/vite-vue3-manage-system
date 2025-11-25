@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Ref, ref } from 'vue'
-import { useStore } from '../store';
+import type { Ref } from 'vue'
+import { ref } from 'vue'
 
 interface Word {
   letter: string
@@ -8,37 +8,27 @@ interface Word {
 }
 defineProps<{ msg: string }>()
 
-const { plus } = useCount()
 const arr = Array.from('helloworld'.split('').map(k => ({ letter: k, isHover: false })))
 const words: Ref<Word[]> = ref(arr)
-const handleHover = (word: Word) => {
+function handleHover(word: Word) {
   word.isHover = true
 }
 
-const handleRemoveHover = (word: Word) => {
+function handleRemoveHover(word: Word) {
   word.isHover = false
-}
-
-function useCount() {
-
-  const store = useStore()
-  function plus() {
-    store.commit('increment')
-    console.log('store', store.state.count)
-  }
-  return { plus }
 }
 </script>
 
 <template>
   <h1>{{ msg }}</h1>
   <div class="words-wrap">
-    <div v-for="word in words" :key="word.letter" class="word" :class="{ 'hover-letter': word.isHover }"
-      @mouseenter="handleHover(word)" @mouseleave="handleRemoveHover(word)">
+    <div
+      v-for="word in words" :key="word.letter" class="word" :class="{ 'hover-letter': word.isHover }"
+      @mouseenter="handleHover(word)" @mouseleave="handleRemoveHover(word)"
+    >
       {{ word.letter }}
     </div>
   </div>
-  <el-button @click="plus">增加</el-button>
 </template>
 
 <style scoped>

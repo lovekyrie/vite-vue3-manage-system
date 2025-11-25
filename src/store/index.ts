@@ -1,4 +1,4 @@
-import type { UserInfo } from '@/api'
+import type { UserInfo } from '@/api/index'
 import { defineStore } from 'pinia'
 import { loginApi } from '@/api/login'
 
