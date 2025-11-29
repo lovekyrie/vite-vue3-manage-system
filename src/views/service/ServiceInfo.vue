@@ -2,14 +2,14 @@
 import type { Service } from '@/utils/types/service'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
-import { queryServiceList } from '@/api/service'
+import { addService, queryServiceList } from '@/api/service'
 import { showMessage } from '@/utils/utils'
+import EditDialog from './components/edit.vue'
 
-const page = ref(1)
-const limit = ref(10)
-const total = ref(0)
-const selectedRows = ref<Service[]>([])
-const tableData = ref<Service[]>([])
+const { tableData, tableColumns } = useTable()
+const { page, limit, total, handleSizeChange, handleCurrentChange } = usePagination()
+const { selectedRows, handleSelectionChange, handleEdit, handleDelete } = useTableOperations()
+const { showDialog, handleAdd, handleCloseDialog, handleAddSubmit, handleBatchDelete } = useBtnOperations()
 
 onMounted(() => {
   getServiceList()
@@ -21,69 +21,130 @@ async function getServiceList() {
     limit: limit.value,
   })
   tableData.value = res.data.list
-  // 如果后端返回了 total，可以设置 total.value = res.total
-  // 暂时使用模拟数据
   total.value = res.data.total
 }
 
-function handleSelectionChange(val: Service[]) {
-  selectedRows.value = val
+function useTable() {
+  const tableData = ref<Service[]>([])
+  const tableColumns = [
+    { type: 'selection', width: 55 },
+    { type: 'index', width: 55, label: '序号' },
+    { prop: 'date', label: '日期' },
+    { prop: 'name', label: '姓名' },
+    { prop: 'phone', label: '电话' },
+    { prop: 'address', label: '地址', width: 250 },
+    { prop: 'opreator', label: '操作' },
+  ]
+
+  return {
+    tableData,
+    tableColumns,
+  }
 }
 
-function handleAdd() {
-  ElMessage.success('点击了新增')
-}
+function useTableOperations() {
+  const selectedRows = ref<Service[]>([])
+  function handleSelectionChange(val: Service[]) {
+    selectedRows.value = val
+  }
 
-function handleBatchDelete() {
-  ElMessageBox.confirm(
-    '确认删除选中的数据吗?',
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
-    .then(() => {
-      showMessage('删除成功', 'success')
-    })
-    .catch(() => {
+  function handleEdit(row: Service) {
+    console.log('Edit', row)
+    ElMessage.info(`编辑: ${row.name}`)
+  }
+
+  function handleDelete(row: Service) {
+    console.log('Delete', row)
+    ElMessageBox.confirm(
+      '确认删除该条数据吗?',
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
+      .then(() => {
+        showMessage('删除成功', 'success')
+      })
+      .catch(() => {
       // cancel
-    })
+      })
+  }
+  return {
+    selectedRows,
+    handleSelectionChange,
+    handleEdit,
+    handleDelete,
+  }
 }
 
-function handleEdit(row: Service) {
-  console.log('Edit', row)
-  ElMessage.info(`编辑: ${row.name}`)
+function usePagination() {
+  const page = ref(1)
+  const limit = ref(10)
+  const total = ref(0)
+  function handleSizeChange(val: number) {
+    limit.value = val
+    getServiceList()
+  }
+
+  function handleCurrentChange(val: number) {
+    page.value = val
+    getServiceList()
+  }
+  return {
+    page,
+    limit,
+    total,
+    handleSizeChange,
+    handleCurrentChange,
+  }
 }
 
-function handleDelete(row: Service) {
-  console.log('Delete', row)
-  ElMessageBox.confirm(
-    '确认删除该条数据吗?',
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
-    .then(() => {
-      showMessage('删除成功', 'success')
-    })
-    .catch(() => {
+function useBtnOperations() {
+  const showDialog = ref(false)
+
+  function handleAdd() {
+    showDialog.value = true
+  }
+
+  function handleCloseDialog() {
+    showDialog.value = false
+  }
+
+  async function handleAddSubmit(data: Service) {
+    const res = await addService(data)
+    if (res.code === 200) {
+      showMessage('新增成功', 'success')
+      getServiceList()
+      handleCloseDialog()
+    }
+  }
+
+  function handleBatchDelete() {
+    ElMessageBox.confirm(
+      '确认删除选中的数据吗?',
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
+      .then(() => {
+        showMessage('删除成功', 'success')
+      })
+      .catch(() => {
       // cancel
-    })
-}
-
-function handleSizeChange(val: number) {
-  limit.value = val
-  getServiceList()
-}
-
-function handleCurrentChange(val: number) {
-  page.value = val
-  getServiceList()
+      })
+  }
+  return {
+    showDialog,
+    handleCloseDialog,
+    handleAddSubmit,
+    handleAdd,
+    handleBatchDelete,
+  }
 }
 </script>
 
@@ -105,34 +166,25 @@ function handleCurrentChange(val: number) {
       </template>
 
       <div class="flex-1 h-full overflow-hidden flex flex-col">
-        <div class="flex-1 overflow-y-auto">
-          <el-table
-            :data="tableData"
-            class="flex-1 h-full"
-            @selection-change="handleSelectionChange"
-          >
-            <el-table-column type="selection" width="55" />
-            <el-table-column type="index" label="序号" width="80" />
-            <el-table-column prop="date" label="日期" width="180" sortable />
-            <el-table-column prop="name" label="姓名" width="180" />
-            <el-table-column prop="phone" label="电话" width="180" />
-            <el-table-column prop="address" label="地址" />
-            <el-table-column label="操作" width="200" fixed="right">
-              <template #default="scope">
-                <el-button size="small" @click="handleEdit(scope.row)">
+        <el-table
+          :data="tableData"
+          height="100%"
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column v-for="column in tableColumns" :key="column.prop" v-bind="column">
+            <template v-if="column.prop" #default="scope">
+              <div v-if="column.prop === 'opreator'">
+                <el-button type="info" size="small" @click="handleEdit(scope.row)">
                   编辑
                 </el-button>
-                <el-button
-                  size="small"
-                  type="danger"
-                  @click="handleDelete(scope.row)"
-                >
+                <el-button type="danger" size="small" @click="handleDelete(scope.row)">
                   删除
                 </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
+              </div>
+              <span v-else>{{ scope.row[column.prop] }}</span>
+            </template>
+          </el-table-column>
+        </el-table>
         <div class="flex justify-end mt-4">
           <el-pagination
             v-model:current-page="page"
@@ -149,6 +201,7 @@ function handleCurrentChange(val: number) {
         </div>
       </div>
     </el-card>
+    <EditDialog :show="showDialog" @close-dialog="handleCloseDialog" @submit="handleAddSubmit" />
   </div>
 </template>
 

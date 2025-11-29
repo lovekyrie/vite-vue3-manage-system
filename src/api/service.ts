@@ -18,3 +18,18 @@ interface LoginResponseData {
 export function queryServiceList(params: Record<string, any> = {}): Promise<ApiResponse<LoginResponseData>> {
   return request.get('/api/services', params)
 }
+
+// 新增管理记录
+export function addService(data: Service): Promise<ApiResponse<void>> {
+  return request.post('/api/services', data)
+}
+
+// 编辑管理记录
+export function editService(data: Service): Promise<ApiResponse<void>> {
+  return request.put(`/api/services/${data.id}`, data)
+}
+
+// 删除管理记录
+export function deleteService(id: string): Promise<ApiResponse<void>> {
+  return request.delete(`/api/services/${id}`)
+}
