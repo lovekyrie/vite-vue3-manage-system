@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
+import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import IconsResolver from 'unplugin-icons/resolver'
@@ -12,15 +13,21 @@ const pathSrc = path.resolve(__dirname, 'src')
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue(), AutoImport({
-    resolvers: [ElementPlusResolver(), IconsResolver()],
-    dts: path.resolve(pathSrc, 'auto-imports.d.ts'),
-  }), Components({
-    resolvers: [ElementPlusResolver(), IconsResolver({ enabledCollections: ['ep'] })],
-    dts: path.resolve(pathSrc, 'components.d.ts'),
-  }), Icons({
-    autoInstall: true,
-  })],
+  plugins: [
+    tailwindcss(),
+    vue(),
+    AutoImport({
+      resolvers: [ElementPlusResolver(), IconsResolver()],
+      dts: path.resolve(pathSrc, 'auto-imports.d.ts'),
+    }),
+    Components({
+      resolvers: [ElementPlusResolver(), IconsResolver({ enabledCollections: ['ep'] })],
+      dts: path.resolve(pathSrc, 'components.d.ts'),
+    }),
+    Icons({
+      autoInstall: true,
+    }),
+  ],
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.vue'],
     alias: {

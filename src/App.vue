@@ -6,9 +6,9 @@
 </template>
 
 <style>
-#app {
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 </style>
