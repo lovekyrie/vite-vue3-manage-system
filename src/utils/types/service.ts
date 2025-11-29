@@ -1,5 +1,5 @@
 interface Service {
-  id?: string
+  id?: number
   date: string
   name: string
   phone: string

@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { FormInstance, FormRules } from 'element-plus'
+import type { Service } from '@/utils/types/service'
 import { reactive, ref, watch } from 'vue'
+import { getServiceById } from '@/api/service'
 import { formatDate, showMessage } from '@/utils/utils'
 import { phoneValid } from '@/utils/validator'
 
@@ -8,6 +10,10 @@ const props = defineProps({
   show: {
     type: Boolean,
     default: false,
+  },
+  serviceId: {
+    type: Number,
+    default: 0,
   },
 })
 
@@ -17,13 +23,18 @@ const dialogVisible = ref<boolean>(props.show)
 watch(() => props.show, (val) => {
   dialogVisible.value = val
 })
-
-const form = reactive({
+watch(() => props.serviceId, (val) => {
+  if (val) {
+    getServiceInfo(val)
+  }
+})
+const form = ref<Service>({
   date: formatDate(), // 默认当前日期
   name: '',
   phone: '',
   address: '',
 })
+const formRef = ref<FormInstance>()
 
 const formRules = reactive<FormRules>({
   date: [
@@ -41,19 +52,24 @@ const formRules = reactive<FormRules>({
 function closeDialog() {
   emit('closeDialog')
 }
-const formRef = ref<FormInstance>()
 async function submit() {
   try {
     if (formRef.value) {
       const res = await formRef.value.validate()
       if (res) {
-        emit('submit', { ...form })
+        emit('submit', { ...form.value })
       }
     }
   }
   catch (error: any) {
     showMessage(`请输入正确的内容再提交`, 'warning')
     throw new Error(error)
+  }
+}
+async function getServiceInfo(id: number) {
+  const res = await getServiceById(id)
+  if (res.code === 200) {
+    form.value = res.data
   }
 }
 </script>

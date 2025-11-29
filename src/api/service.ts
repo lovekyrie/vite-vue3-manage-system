@@ -26,10 +26,21 @@ export function addService(data: Service): Promise<ApiResponse<void>> {
 
 // 编辑管理记录
 export function editService(data: Service): Promise<ApiResponse<void>> {
-  return request.put(`/api/services/${data.id}`, data)
+  return request.patch(`/api/services/${data.id}`, data)
 }
 
 // 删除管理记录
-export function deleteService(id: string): Promise<ApiResponse<void>> {
+export function deleteService(id: number): Promise<ApiResponse<void>> {
   return request.delete(`/api/services/${id}`)
+}
+
+// 批量删除管理记录
+export function batchDeleteService(ids: number[]): Promise<ApiResponse<void>> {
+  return request.delete(`/api/services/batch/delete`, {
+    data: { ids },
+  })
+}
+// 获取管理记录详情
+export function getServiceById(id: number): Promise<ApiResponse<Service>> {
+  return request.get(`/api/services/${id}`)
 }

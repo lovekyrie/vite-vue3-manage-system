@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { Service } from '@/utils/types/service'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
-import { addService, queryServiceList } from '@/api/service'
+import { addService, batchDeleteService, deleteService, editService, queryServiceList } from '@/api/service'
 import { showMessage } from '@/utils/utils'
 import EditDialog from './components/edit.vue'
 
 const { tableData, tableColumns } = useTable()
 const { page, limit, total, handleSizeChange, handleCurrentChange } = usePagination()
-const { selectedRows, handleSelectionChange, handleEdit, handleDelete } = useTableOperations()
-const { showDialog, handleAdd, handleCloseDialog, handleAddSubmit, handleBatchDelete } = useBtnOperations()
+const { selectedRows, serviceId, handleSelectionChange, handleEdit, handleDelete } = useTableOperations()
+const { showDialog, handleAdd, handleCloseDialog, handleSubmit, handleBatchDelete } = useBtnOperations()
 
 onMounted(() => {
   getServiceList()
@@ -44,17 +44,18 @@ function useTable() {
 
 function useTableOperations() {
   const selectedRows = ref<Service[]>([])
+  const serviceId = ref<number>(0)
   function handleSelectionChange(val: Service[]) {
     selectedRows.value = val
   }
 
   function handleEdit(row: Service) {
-    console.log('Edit', row)
-    ElMessage.info(`编辑: ${row.name}`)
+    showDialog.value = true
+    // 传id过去
+    serviceId.value = row.id as number
   }
 
   function handleDelete(row: Service) {
-    console.log('Delete', row)
     ElMessageBox.confirm(
       '确认删除该条数据吗?',
       '警告',
@@ -64,8 +65,12 @@ function useTableOperations() {
         type: 'warning',
       },
     )
-      .then(() => {
-        showMessage('删除成功', 'success')
+      .then(async () => {
+        const res = await deleteService(row.id as number)
+        if (res.code === 200) {
+          showMessage('删除成功', 'success')
+          getServiceList()
+        }
       })
       .catch(() => {
       // cancel
@@ -76,6 +81,7 @@ function useTableOperations() {
     handleSelectionChange,
     handleEdit,
     handleDelete,
+    serviceId,
   }
 }
 
@@ -112,10 +118,16 @@ function useBtnOperations() {
     showDialog.value = false
   }
 
-  async function handleAddSubmit(data: Service) {
-    const res = await addService(data)
+  async function handleSubmit(data: Service) {
+    let res = null
+    if (data.id) {
+      res = await editService(data)
+    }
+    else {
+      res = await addService(data)
+    }
     if (res.code === 200) {
-      showMessage('新增成功', 'success')
+      showMessage(serviceId.value ? '修改成功' : '新增成功', 'success')
       getServiceList()
       handleCloseDialog()
     }
@@ -131,8 +143,13 @@ function useBtnOperations() {
         type: 'warning',
       },
     )
-      .then(() => {
-        showMessage('删除成功', 'success')
+      .then(async () => {
+        const deleteIds = selectedRows.value.map(row => row.id as number)
+        const res = await batchDeleteService(deleteIds)
+        if (res.code === 200) {
+          showMessage('删除成功', 'success')
+          getServiceList()
+        }
       })
       .catch(() => {
       // cancel
@@ -141,7 +158,7 @@ function useBtnOperations() {
   return {
     showDialog,
     handleCloseDialog,
-    handleAddSubmit,
+    handleSubmit,
     handleAdd,
     handleBatchDelete,
   }
@@ -201,7 +218,7 @@ function useBtnOperations() {
         </div>
       </div>
     </el-card>
-    <EditDialog :show="showDialog" @close-dialog="handleCloseDialog" @submit="handleAddSubmit" />
+    <EditDialog :show="showDialog" :service-id="serviceId" @close-dialog="handleCloseDialog" @submit="handleSubmit" />
   </div>
 </template>
 

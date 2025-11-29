@@ -87,8 +87,8 @@ export function post<T = any>(url: string, data?: any, config?: AxiosRequestConf
 }
 
 // 封装 PUT 请求
-export function put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-  return service.put(url, data, config)
+export function patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  return service.patch(url, data, config)
 }
 
 // 封装 DELETE 请求
@@ -115,7 +115,7 @@ export function upload<T = any>(url: string, formData: FormData, config?: AxiosR
 const request = {
   get,
   post,
-  put,
+  patch,
   delete: deleteRequest,
   upload,
   deleteRequest,
