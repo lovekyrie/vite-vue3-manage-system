@@ -25,7 +25,7 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedParameters": false,
     "noEmit": true,
     "isolatedModules": true,
     "skipLibCheck": true
