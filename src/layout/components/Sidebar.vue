@@ -11,6 +11,11 @@
       <span>记账管理系统</span>
     </div>
     
+    <el-menu-item index="/data/overview">
+      <el-icon><PieChart /></el-icon>
+      <span>数据总览</span>
+    </el-menu-item>
+
     <el-sub-menu index="/service">
       <template #title>
         <el-icon><Service /></el-icon>
@@ -62,7 +67,8 @@ import {
   Money,
   Reading,
   Notebook,
-  InfoFilled
+  InfoFilled,
+  PieChart
 } from '@element-plus/icons-vue'
 </script>
 

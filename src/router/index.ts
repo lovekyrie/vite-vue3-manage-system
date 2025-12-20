@@ -42,6 +42,12 @@ const routes = [
         meta: { title: '记账列表' }
       },
       {
+        path: 'data/overview',
+        name: 'DataOverview',
+        component: () => import('@/views/dataOverview/index.vue'),
+        meta: { title: '数据总览' }
+      },
+      {
         path: 'about',
         name: 'About',
         component: () => import('@/views/about/index.vue'),

@@ -1,4 +1,3 @@
-import type { AccountingRecord, CreateAccountingInput } from '@/utils/types/accounting'
 import request from '../utils/request'
 
 /**
@@ -20,38 +19,18 @@ interface LoginResponseData {
 }
 
 /**
+ * 登录接口返回类型
+ * 在 ApiResponse 的基础上，data 中包含 total 和 list 字段
+ */
+interface ListResponseData<T> {
+  total: number
+  list: T[]
+}
+
+/**
  * 登录接口响应类型
  */
 type LoginResponse = ApiResponse<LoginResponseData>
-
-/**
- * 记账管理相关API
- */
-
-// 获取记账记录列表
-export function queryAccountingList(params: Record<string, any> = {}): Promise<ApiResponse<AccountingRecord[]>> {
-  return request.get('/api/accounting', params)
-}
-
-// 创建记账记录
-export function createAccounting(data: Partial<CreateAccountingInput>): Promise<ApiResponse<AccountingRecord>> {
-  return request.post('/api/accounting', data)
-}
-
-// 更新记账记录
-export function updateAccounting(id: number | string, data: Partial<CreateAccountingInput>): Promise<ApiResponse<AccountingRecord>> {
-  return request.put(`/api/accounting/${id}`, data)
-}
-
-// 删除记账记录
-export function deleteAccounting(id: number | string): Promise<ApiResponse<void>> {
-  return request.delete(`/api/accounting/${id}`)
-}
-
-// 获取记账统计信息
-export function getAccountingStats(params: Record<string, any> = {}): Promise<ApiResponse<any>> {
-  return request.get('/api/accounting/stats', params)
-}
 
 /**
  * 费用类型
@@ -82,7 +61,7 @@ export const expenseTypeApi = {
 
   // 更新费用类型
   updateExpenseType(id: number | string, data: Partial<ExpenseType>): Promise<ApiResponse<ExpenseType>> {
-    return request.put(`/api/expense-types/${id}`, data)
+    return request.patch(`/api/expense-types/${id}`, data)
   },
 
   // 删除费用类型
@@ -176,7 +155,7 @@ export const uploadApi = {
 }
 
 // 导出类型
-export type { ApiResponse, ExpenseType, LoginData, LoginResponse, LoginResponseData, RegisterData, UploadResponse, UserInfo }
+export type { ApiResponse, ExpenseType, ListResponseData, LoginData, LoginResponse, LoginResponseData, RegisterData, UploadResponse, UserInfo }
 
 // 默认导出所有API
 export default {
